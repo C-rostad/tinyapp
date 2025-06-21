@@ -16,5 +16,8 @@
     "url": "https://github.com/C-rostad/tinyapp/issues"
   },
   "homepage": "https://github.com/C-rostad/tinyapp#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
 }
