@@ -35,11 +35,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let newId = generateRandomString();
-  const keys = Object.keys(urlDatabase);
-  if (keys.includes(newId)) { //check if key already exists, if so generate new string
-    newId = generateRandomString()
-  }
+let newId = generateRandomString();
+while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists, if so make new one
+  newId = generateRandomString();
+}
+
   urlDatabase[newId] = req.body.longURL;
   res.redirect(`/urls/${newId}`);
 });
