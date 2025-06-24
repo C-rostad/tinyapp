@@ -26,10 +26,8 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  console.log("username", req.body.username);
   res.cookie("username", req.body.username);
   res.redirect("/urls");
-
 });
 
 app.get("/urls", (req, res) => {
