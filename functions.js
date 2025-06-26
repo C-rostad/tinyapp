@@ -12,4 +12,33 @@ const findUser = function (userEmail, users) {
   return false;
 };
 
-module.exports = findUser;
+const setTemplateVars = function (req, users, urlDatabase) {
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
+  const templateVars = { 
+    urls: urlDatabase, 
+    username: username
+  };
+  return templateVars;
+}
+
+const generateRandomString = function() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const length = 6;
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result = result.concat(characters[randomIndex]); 
+  }
+  return result;
+}
+
+
+module.exports = {
+  findUser,
+  setTemplateVars,
+  generateRandomString
+  };
