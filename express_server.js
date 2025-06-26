@@ -42,13 +42,25 @@ app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
+  const templateVars = { 
+    urls: urlDatabase, 
+    username: username
+  };
+  res.render("login", templateVars);
+})
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
