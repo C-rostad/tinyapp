@@ -24,6 +24,20 @@ const generateRandomString = function() {
   return result;
 }
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
@@ -39,21 +53,49 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
   const templateVars = { 
     urls: urlDatabase, 
-    username: req.cookies["username"]
+    username: username
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
+  const templateVars = { 
+    username: username
+  };
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res)  => {
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie("user_id", userID);
+  res.redirect("/urls");
 })
 
 app.get("/urls/new", (req, res) => {
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
   const templateVars = {
-    username: req.cookies["username"]
+    username: username
   }
   res.render("urls_new", templateVars);
 });
@@ -69,10 +111,15 @@ while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists
 });
 
 app.get("/urls/:id", (req, res) => {
+  const idCookie = req.cookies["user_id"]
+  let username = ""
+  if (users[idCookie]) {
+    username = users[idCookie].email
+  }
   const templateVars = { 
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    username: username
   };
   res.render("urls_show", templateVars);
 });
