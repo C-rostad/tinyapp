@@ -14,13 +14,13 @@ const findUser = function (userEmail, users) {
 
 const setTemplateVars = function (req, users, urlDatabase) {
   const idCookie = req.cookies["user_id"]
-  let username = ""
+  let email = ""
   if (users[idCookie]) {
-    username = users[idCookie].email
+    email = users[idCookie].email
   }
   const templateVars = { 
     urls: urlDatabase, 
-    username: username
+    email: email
   };
   return templateVars;
 }

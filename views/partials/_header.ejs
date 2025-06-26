@@ -19,8 +19,8 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
 
-      <% if (username && username !== "undefined") { %>
-        <div class="navbar-text mr-3 text-white">User: <%= username %></div>
+      <% if (email && email !== "undefined") { %>
+        <div class="navbar-text mr-3 text-white">User: <%= email %></div>
         <form class="form-inline" method="POST" action="/logout">
           <button type="submit" class="btn btn-outline-light">Logout</button>
         </form>
