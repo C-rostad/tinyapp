@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
-
+const { findUser, setTemplateVars, generateRandomString } = require('./functions.js');
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -13,44 +13,87 @@ const urlDatabase = {
 };
 
 
-const generateRandomString = function() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const length = 6;
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    result = result.concat(characters[randomIndex]); 
-  }
-  return result;
-}
+
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+const templateVars = setTemplateVars(req, users, urlDatabase);
+  res.render("login", templateVars);
+})
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  const user = findUser(req.body.email, users);
+  console.log(user);
+  console.log(req.body.email);
+  if (!user) {
+    return res.status(403).send("Error: No user with that email found.");
+  }
+
+  if (user.password !== req.body.password) {
+    return res.status(403).send("Error: Incorrect password.");
+  }
+  res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  res.redirect("/urls");
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
-
-  const templateVars = { 
-    urls: urlDatabase, 
-    username: req.cookies["username"]
-  };
+const templateVars = setTemplateVars(req, users, urlDatabase);
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"]
+app.get("/register", (req, res) => {
+const templateVars = setTemplateVars(req, users, urlDatabase);
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res)  => {
+  const userID = generateRandomString();
+  console.log(findUser(req.body.email, users));
+  if (findUser(req.body.email, users)) { //check if email is in users object already
+    console.log("Here");
+   return res.status(400).send("Error! User with that email already exists");
+  };
+
+  if (req.body.password.length === 0) {
+   return res.status(400).send("Error: no password input");
   }
+
+  if (req.body.email.length === 0) {
+    return res.status(400).send("Error: no email input");
+  }
+
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie("user_id", userID);
+  res.redirect("/urls");
+})
+
+app.get("/urls/new", (req, res) => {
+const templateVars = setTemplateVars(req, users, urlDatabase);
   res.render("urls_new", templateVars);
 });
 
@@ -65,11 +108,7 @@ while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { 
-    id: req.params.id, 
-    longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
-  };
+const templateVars = setTemplateVars(req, users, urlDatabase);
   res.render("urls_show", templateVars);
 });
 
