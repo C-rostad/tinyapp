@@ -34,13 +34,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-const templateVars = setTemplateVars(req, users, urlDatabase);
-  res.render("login", templateVars);
-})
+  const templateVars = setTemplateVars(req, users, urlDatabase);
+  if (templateVars.email) {
+    res.redirect("/urls");
+  } else {
+    res.render("login", templateVars);
+  }
+});
+
 app.post("/login", (req, res) => {
   const user = findUser(req.body.email, users);
-  console.log(user);
-  console.log(req.body.email);
   if (!user) {
     return res.status(403).send("Error: No user with that email found.");
   }
@@ -63,8 +66,12 @@ const templateVars = setTemplateVars(req, users, urlDatabase);
 });
 
 app.get("/register", (req, res) => {
-const templateVars = setTemplateVars(req, users, urlDatabase);
-  res.render("register", templateVars);
+  const templateVars = setTemplateVars(req, users, urlDatabase);
+  if (templateVars.email) {
+    res.redirect("/urls");
+  } else {
+    res.render("register", templateVars);
+  }
 });
 
 app.post("/register", (req, res)  => {
@@ -94,10 +101,19 @@ app.post("/register", (req, res)  => {
 
 app.get("/urls/new", (req, res) => {
 const templateVars = setTemplateVars(req, users, urlDatabase);
-  res.render("urls_new", templateVars);
+  if (templateVars.email) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
+  
 });
 
 app.post("/urls", (req, res) => {
+const templateVars = setTemplateVars(req, users, urlDatabase);
+if (!templateVars.email) {
+  return res.status(403).send("<h3>Error: You must be logged in to shorten URLs.</h3>");
+}
 let newId = generateRandomString();
 while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists, if so make new one
   newId = generateRandomString();
@@ -108,7 +124,16 @@ while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists
 });
 
 app.get("/urls/:id", (req, res) => {
-const templateVars = setTemplateVars(req, users, urlDatabase);
+  const id = req.params.id;
+  const urlEntry = urlDatabase[id];
+  if (!urlEntry) {
+    return res.status(404).send("<h3>Error: Short URL does not exist.</h3>");
+  }
+  const templateVars = {
+    ...setTemplateVars(req, users, urlDatabase),
+    id: id,
+    longURL: urlEntry.longURL
+  };
   res.render("urls_show", templateVars);
 });
 
