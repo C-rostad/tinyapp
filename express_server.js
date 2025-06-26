@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
-
+const  findUser = require("./functions.js");
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -79,6 +79,20 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res)  => {
   const userID = generateRandomString();
+  console.log(findUser(req.body.email, users));
+  if (findUser(req.body.email, users)) { //check if email is in users object already
+    console.log("Here");
+   return res.status(400).send("Error! User with that email already exists");
+  };
+
+  if (req.body.password.length === 0) {
+   return res.status(400).send("Error: no password input");
+  }
+
+  if (req.body.email.length === 0) {
+    return res.status(400).send("Error: no email input");
+  }
+
   users[userID] = {
     id: userID,
     email: req.body.email,
