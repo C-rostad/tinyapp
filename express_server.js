@@ -25,7 +25,7 @@ const generateRandomString = function() {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
