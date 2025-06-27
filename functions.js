@@ -19,7 +19,7 @@ const setTemplateVars = function (req, users, urlDatabase) {
     email = users[idCookie].email
   }
   const templateVars = { 
-    urls: urlDatabase, 
+    urls: urlsForUser(idCookie, urlDatabase), 
     email: email
   };
   return templateVars;
@@ -36,9 +36,23 @@ const generateRandomString = function() {
   return result;
 }
 
+const urlsForUser = function(userID, urlDatabase) {
+  const userURLs = {};
+  for (const id in urlDatabase) {
+    if (urlDatabase[id].userID === userID) {
+      userURLs[id] = urlDatabase[id];
+    }
+  }
+  if (Object.keys(userURLs).length === 0) {
+    return false;
+  }
+  return userURLs;
+};
+
 
 module.exports = {
   findUser,
   setTemplateVars,
-  generateRandomString
+  generateRandomString,
+  urlsForUser
   };
