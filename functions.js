@@ -13,7 +13,7 @@ const findUser = function (userEmail, users) {
 };
 
 const setTemplateVars = function (req, users, urlDatabase) {
-  const idCookie = req.cookies["user_id"]
+  const idCookie = req.session.user_id
   let email = ""
   if (users[idCookie]) {
     email = users[idCookie].email

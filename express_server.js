@@ -1,11 +1,19 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const { findUser, setTemplateVars, generateRandomString, urlsForUser } = require('./functions.js');
 const bcrypt = require("bcryptjs");
 
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['dfe9f2a5d3622d6ec47b5a91d9c380b0f0d1e4206d905e96d87e5dfdc1a4c457'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+
+
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
@@ -36,7 +44,7 @@ const users = {
   aJ48lW : {
     id: "aJ48lW",
     email: "carter@rostad.ca",
-    password: "123",
+    password: bcrypt.hashSync("123", 10)
   }
 };
 
@@ -63,7 +71,7 @@ app.post("/login", (req, res) => {
   if (!bcrypt.compareSync(req.body.password, user.password)) { //user.password !== req.body.password
     return res.status(403).send("Error: Incorrect password.");
   }
-  res.cookie("user_id", user.id);
+  req.session.user_id = user.id;
   res.redirect("/urls");
 });
 
@@ -107,8 +115,7 @@ app.post("/register", (req, res)  => {
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10)
   };
-
-  res.cookie("user_id", userID);
+  req.session.user_id = userID;
   res.redirect("/urls");
 })
 
@@ -138,7 +145,7 @@ while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const userIdCookie = req.cookies.user_id;
+  const userIdCookie = req.session.user_id;
   const urlUserId = urlDatabase[id].userID;
   if (userIdCookie === "undefined" || ! userIdCookie) { //check if user is logged in
     return res.status(403).send("<h3>Error: You must be logged in to view your shortenedURLs.</h3>");
@@ -163,7 +170,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const newUrl = req.body.longURL;
-  const userIdCookie = req.cookies.user_id;
+  const userIdCookie = req.session.user_id;
   const urlEntry = urlDatabase[id];
 
   if (!urlEntry) { //check if entry exists
@@ -190,7 +197,7 @@ app.get("/u/:id", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
-  const userIdCookie = req.cookies.user_id;
+  const userIdCookie = req.session.user_id;
   const urlEntry =  urlDatabase[id];
 
   if (!urlEntry) { //check if url exists
