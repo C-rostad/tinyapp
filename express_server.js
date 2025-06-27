@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session');
-const { findUser, setTemplateVars, generateRandomString, urlsForUser } = require('./functions.js');
+const { getUserByEmail, setTemplateVars, generateRandomString, urlsForUser } = require('./functions.js');
 const bcrypt = require("bcryptjs");
 
 app.use(cookieSession({
@@ -63,7 +63,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const user = findUser(req.body.email, users);
+  const user = getUserByEmail(req.body.email, users);
   if (!user) {
     return res.status(403).send("Error: No user with that email found.");
   }
@@ -76,7 +76,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session['user_id'] = null.
   res.redirect("/login");
 });
 
@@ -96,9 +96,7 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res)  => {
   const userID = generateRandomString();
-  console.log(findUser(req.body.email, users));
-  if (findUser(req.body.email, users)) { //check if email is in users object already
-    console.log("Here");
+  if (getUserByEmail(req.body.email, users)) { //check if email is in users object already
    return res.status(400).send("Error! User with that email already exists");
   };
 
