@@ -4,13 +4,13 @@ const { getUserByEmail, getUrlsForUser, setTemplateVars, generateRandomString } 
 
 const testUsers = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
@@ -20,9 +20,10 @@ const testUrlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userId: "user456" }
 };
 
+// Tests for getUserByEmail helper function
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
-    const user = getUserByEmail("user@example.com", testUsers)
+    const user = getUserByEmail("user@example.com", testUsers);
     const expectedUserID = "userRandomID";
     assert.strictEqual(user.id, expectedUserID);
   });
@@ -54,7 +55,7 @@ describe('getUserByEmail', function() {
   
 });
 
-
+// Tests for getUrlsForUser helper function
 describe('getUrlsForUser', () => {
 
   it('should return URLs that belong to the specified user', () => {
@@ -82,6 +83,7 @@ describe('getUrlsForUser', () => {
 
 });
 
+//Tests for setTemplateVars helper function
 describe('setTemplateVars', () => {
   const users = {
     "user1": { id: "user1", email: "user1@example.com" },
@@ -95,7 +97,7 @@ describe('setTemplateVars', () => {
   };
 
   it('should return templateVars with urls and email when user is logged in', () => {
-    const req = { session: { user_id: "user1" } };
+    const req = { session: { userId: "user1" } };
     const result = setTemplateVars(req, users, urlDatabase);
     assert.deepEqual(result.urls, {
       "url1": { longURL: "http://a.com", userId: "user1" },
@@ -104,14 +106,14 @@ describe('setTemplateVars', () => {
     assert.strictEqual(result.email, "user1@example.com");
   });
 
-  it('should return empty urls and empty email if user_id cookie not in users', () => {
-    const req = { session: { user_id: "nonexistentUser" } };
+  it('should return empty urls and empty email if userId cookie not in users', () => {
+    const req = { session: { userId: "nonexistentUser" } };
     const result = setTemplateVars(req, users, urlDatabase);
     assert.deepEqual(result.urls, {});
     assert.strictEqual(result.email, "");
   });
 
-  it('should return empty email if session has no user_id', () => {
+  it('should return empty email if session has no userId', () => {
     const req = { session: {} };
     const result = setTemplateVars(req, users, urlDatabase);
     assert.deepEqual(result.urls, {});
@@ -119,6 +121,7 @@ describe('setTemplateVars', () => {
   });
 });
 
+//Tests for generateRandomString helper function
 describe('generateRandomString', () => {
   it('should generate a string of length 6', () => {
     const result = generateRandomString();
