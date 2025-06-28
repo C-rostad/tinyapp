@@ -33,7 +33,12 @@
           <% for (let id in urls) { %>
             <tr>
               <td><a href="/urls/<%= id %>" target="_blank"><%= id %></a></td>
-              <td><a href="<%=urls[id].longURL%>" target="_blank"><%= urls[id].longURL %></a></td>
+              <td><a href="<%= urls[id].longURL.startsWith('http') ? urls[id].longURL : 'http://' + urls[id].longURL %>" 
+                  target="_blank" 
+                  title="Open the long URL in a new tab">
+                  <%= urls[id].longURL %>
+                </a>
+              </td>
               <td> <form method="GET" action="/urls/<%= id %>">
                 <button type="submit" class="btn btn-primary">Edit</button>
               </form></td>             

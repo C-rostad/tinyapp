@@ -32,17 +32,16 @@ const getUserByEmail = function(userEmail, users) {
  * @returns {Object} - An object containing 'urls' and 'email' for templates.
  */
 const setTemplateVars = function(req, users, urlDatabase) {
-  const idCookie = req.session.userId; // Get logged-in user ID from session cookie
+  const userId = req.session.userId; // Get logged-in user ID from session cookie
   let email = "";
 
   // If user exists, get their email
-  if (users[idCookie]) {
-    email = users[idCookie].email;
+  if (users[userId]) {
+    email = users[userId].email;
   }
-
   // Prepare template variables: urls owned by user and user email
   const templateVars = {
-    urls: getUrlsForUser(idCookie, urlDatabase),
+    urls: getUrlsForUser(userId, urlDatabase),
     email: email
   };
   return templateVars;

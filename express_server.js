@@ -8,7 +8,7 @@ const bcrypt = require("bcryptjs");
 // Configure cookie-session middleware to manage session cookies
 app.use(cookieSession({
   name: 'session',
-  keys: ['dfe9f2a5d3622d6ec47b5a91d9c380b0f0d1e4206d905e96d87e5dfdc1a4c457'], // Secret keys for encryption
+  keys: ['dfe9f2a5d3622d6ec47b5a91d9c380b0f0d1e4206d905e96d87e5dfdc1a4c457'], // Secret key for encryption
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000  // Set cookie to expire after 24 hours
@@ -40,16 +40,23 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur",
   },
-  user2RandomID: {
+  aJ48lW: {
     id: "aJ48lW",
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", 10)
   },
 };
 
-// Root route redirects users to the main URLs page
+// Root route redirects users to the main URLs page if logged in, login page if not
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  const userId = req.session.userId;
+
+  if(userId && users[userId]) { 
+    res.redirect("/urls");
+  }
+  else {
+    res.redirect("/login");
+  }
 });
 
 // Render login page or redirect logged-in users to /urls
@@ -84,6 +91,13 @@ app.post("/logout", (req, res) => {
 
 // Display list of URLs for logged-in user
 app.get("/urls", (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) { //CODE REVIEW HERE - REDIRECT TO LOGIN???
+    return res.status(403).send("Error: Must be logged in to visit urls page");
+  }
+
+
   const templateVars = setTemplateVars(req, users, urlDatabase);
   res.render("urls_index", templateVars);
 });
@@ -135,6 +149,7 @@ app.get("/urls/new", (req, res) => {
 
 // Handle submission of new long URL to be shortened
 app.post("/urls", (req, res) => {
+  const userId = req.session.userId;
   const templateVars = setTemplateVars(req, users, urlDatabase);
   if (!templateVars.email) { // Require user to be logged in
     return res.status(403).send("<h3>Error: You must be logged in to shorten URLs.</h3>");
@@ -144,34 +159,42 @@ app.post("/urls", (req, res) => {
     newId = generateRandomString();
   }
 
-  urlDatabase[newId] = req.body.longURL; // Store the new short URL with the associated userId
+  urlDatabase[newId] = {// Store the new short URL with the associated userId
+    longURL: req.body.longURL.startsWith('http') ? req.body.longURL : `http://${req.body.longURL}`,
+    userId,
+  }
   res.redirect(`/urls/${newId}`); // Redirect user to the page for the new short URL
 });
 
 // Show details/edit page for a specific short URL (only accessible by owner)
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const userIdCookie = req.session.userId;
-  const urlUserId = urlDatabase[id].userId;
-  if (userIdCookie === "undefined" || ! userIdCookie) { //check if user is logged in
-    return res.status(403).send("<h3>Error: You must be logged in to view your shortenedURLs.</h3>");
+  const userId = req.session.userId;
+
+  console.log("Requested ID:", id);
+  console.log("Current DB keys:", Object.keys(urlDatabase));
+  console.log("Matching entry:", urlDatabase[id]);
+
+  if (!userId) {
+    return res.status(403).send("<h3>Error: You must be logged in to view your shortened URLs.</h3>");
   }
 
   const urlEntry = urlDatabase[id];
-  if (!urlEntry) { // Check if short URL exists
+
+  if (!urlEntry) {
     return res.status(404).send("<h3>Error: Short URL does not exist.</h3>");
   }
 
-  if (userIdCookie !== urlUserId) { // Check if logged-in user owns the short URL
-    return res.status(403).send("<h3>Error: You must have created the short URL to use it.</h3>");
+  if (userId !== urlEntry.userId) {
+    return res.status(403).send("<h3>Error: You must have created the short URL to view it.</h3>");
   }
 
-   // Prepare variables for rendering the edit page
   const templateVars = {
     ...setTemplateVars(req, users, urlDatabase),
-    id: id,
+    id,
     longURL: urlEntry.longURL
   };
+
   res.render("urls_show", templateVars);
 });
 
@@ -179,29 +202,33 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const newUrl = req.body.longURL;
-  const userIdCookie = req.session.userId;
+  const userId = req.session.userId;
   const urlEntry = urlDatabase[id];
 
-  if (!urlEntry) { // Verify the short URL exists
+  if (!urlEntry) {
     return res.status(404).send("<h3>Error: Short URL does not exist.</h3>");
   }
 
-  if (userIdCookie === "undefined" || !userIdCookie) { // Verify user is logged in
-    return res.status(403).send("<h3>Error: You must be logged in to view your shortenedURLs.</h3>");
+  if (!userId) {
+    return res.status(403).send("<h3>Error: You must be logged in to view your shortened URLs.</h3>");
   }
 
-  if (urlEntry.userID !== userIdCookie) { // Verify user owns the URL
+  if (urlEntry.userId !== userId) {
     return res.status(403).send("<h3>Error: You must have created the short URL to use it.</h3>");
   }
 
-  // Update the long URL for the given short URL
-  console.log("Changing longURL for " + id + " to " + newUrl);
-  urlDatabase[id].longURL = newUrl;
+  // Sanitize input just like when creating new URLs
+  urlDatabase[id].longURL = newUrl.startsWith("http") ? newUrl : `http://${newUrl}`;
+  console.log(`Updated longURL for ${id} to ${urlDatabase[id].longURL}`);
   res.redirect(`/urls/${id}`);
 });
 
 // Redirect visitors from short URL to the original long URL
 app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  if (!urlDatabase[id]) {
+    return res.status(404).send("<h3>Error: Url does not exist");
+  }
   const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
 });
@@ -209,18 +236,20 @@ app.get("/u/:id", (req, res) => {
 // Handle deletion of a short URL (only by owner)
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
-  const userIdCookie = req.session.userId;
+  const userId = req.session.userId;
   const urlEntry =  urlDatabase[id];
+  console.log(urlEntry);
+  console.log(userId);
 
   if (!urlEntry) {// Verify short URL exists
     return res.status(404).send("<h3>Error: Short URL does not exist.</h3>");
   }
 
-  if (!userIdCookie || userIdCookie === "undefined") { // Verify user is logged in
+  if (!userId || userId === "undefined") { // Verify user is logged in
     return res.status(403).send("<h3>Error: You must be logged in to delete URLs.</h3>");
   }
 
-  if (urlEntry.userID !== userIdCookie) { // Verify logged-in user owns the URL
+  if (urlEntry.userId !== userId) { // Verify logged-in user owns the URL
     return res.status(403).send("<h3>Error: You do not have permission to delete this URL.</h3>");
   }
 
