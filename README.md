@@ -4,10 +4,10 @@ TinyApp is a full-stack web application built with Node.js and Express that allo
 Final Product
 
 
-Home page showing list of shortened URLs.
+![Home page showing list of shortened URLs.](https://github.com/C-rostad/tinyapp/blob/master/Tinyapp_Homepage.png)
 
 
-Page to view and edit details of a specific shortened URL.
+![Page to view and edit details of a specific shortened URL.](https://github.com/C-rostad/tinyapp/blob/master/Tinyapp_shortURL.png)
 
 
 Dependencies
@@ -24,14 +24,14 @@ Dependencies
 
 Getting Started
 
-    Clone this repository.
+Clone this repository.
 
-    Install dependencies by running:
+Install dependencies by running:
 
-```npm install
+  npm install
 
 Start the development server:
 
-```node express_server.js
+  node express_server.js
 
 Open your browser and go to http://localhost:8080 to use the app.
