@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session');
-const { getUserByEmail, setTemplateVars, generateRandomString, urlsForUser } = require('./functions.js');
+const { getUserByEmail, setTemplateVars, generateRandomString } = require('./helpers.js');
 const bcrypt = require("bcryptjs");
 
 app.use(cookieSession({
@@ -20,11 +20,11 @@ app.set("view engine", "ejs");
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
+    userId: "aJ48lW",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userId: "aJ48lW",
   },
 };
 
@@ -76,7 +76,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session['user_id'] = null.
+  req.session['user_id'] = null;
   res.redirect("/login");
 });
 
@@ -104,7 +104,7 @@ app.post("/register", (req, res)  => {
    return res.status(400).send("Error: no password input");
   }
 
-  if (req.body.email.length === 0) {
+  if (!req.body.email) {
     return res.status(400).send("Error: no email input");
   }
 
@@ -144,7 +144,7 @@ while (Object.keys(urlDatabase).includes(newId)) { //check if key already exists
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const userIdCookie = req.session.user_id;
-  const urlUserId = urlDatabase[id].userID;
+  const urlUserId = urlDatabase[id].userId;
   if (userIdCookie === "undefined" || ! userIdCookie) { //check if user is logged in
     return res.status(403).send("<h3>Error: You must be logged in to view your shortenedURLs.</h3>");
   };

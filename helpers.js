@@ -1,15 +1,17 @@
 
 //checks user object for userEmail, if it exists return the user, if not return false
-const getUserByEmail = function (userEmail, users) {
+const getUserByEmail = function(userEmail, users) {
   if (!userEmail || !users) {
-    return;
+    return undefined; // invalid input
   }
+
   for (const key in users) {
-    if (users[key]["email"] === userEmail) {
-      return users[key];
+    if (users[key].email === userEmail) {
+      return users[key]; // match found
     }
   }
-  return;
+
+  return false; // email not found
 };
 
 const setTemplateVars = function (req, users, urlDatabase) {
@@ -19,7 +21,7 @@ const setTemplateVars = function (req, users, urlDatabase) {
     email = users[idCookie].email
   }
   const templateVars = { 
-    urls: urlsForUser(idCookie, urlDatabase), 
+    urls: getUrlsForUser(idCookie, urlDatabase), 
     email: email
   };
   return templateVars;
@@ -36,15 +38,12 @@ const generateRandomString = function() {
   return result;
 }
 
-const urlsForUser = function(userID, urlDatabase) {
+const getUrlsForUser = function(userId, urlDatabase) {
   const userURLs = {};
-  for (const id in urlDatabase) {
-    if (urlDatabase[id].userID === userID) {
-      userURLs[id] = urlDatabase[id];
+  for (const urlId in urlDatabase) {
+    if (urlDatabase[urlId].userId === userId) {
+      userURLs[urlId] = urlDatabase[urlId];
     }
-  }
-  if (Object.keys(userURLs).length === 0) {
-    return false;
   }
   return userURLs;
 };
@@ -54,5 +53,5 @@ module.exports = {
   getUserByEmail,
   setTemplateVars,
   generateRandomString,
-  urlsForUser
+  getUrlsForUser
   };
