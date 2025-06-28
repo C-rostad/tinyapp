@@ -1,37 +1,33 @@
-TinyApp Project
+# TinyApp Project
 
 TinyApp is a full-stack web application built with Node.js and Express that allows users to shorten long URLs (similar to bit.ly).
-Final Product
 
+## Final Product
 
 ![Home page showing list of shortened URLs.](https://github.com/C-rostad/tinyapp/blob/master/Tinyapp_Homepage.png)
 
-
 ![Page to view and edit details of a specific shortened URL.](https://github.com/C-rostad/tinyapp/blob/master/Tinyapp_shortURL.png)
 
+## Dependencies
 
-Dependencies
+- Node.js
+- Express
+- EJS (Embedded JavaScript templates)
+- bcryptjs (for password hashing)
+- cookie-session (for session management)
 
-    Node.js
+## Getting Started
 
-    Express
+1. Clone this repository.
 
-    EJS (Embedded JavaScript templates)
+2. Install dependencies by running:
 
-    bcryptjs (for password hashing)
+   ```bash
+   npm install
 
-    cookie-session (for session management)
+3. Start the development server:
 
-Getting Started
-
-Clone this repository.
-
-Install dependencies by running:
-
-  npm install
-
-Start the development server:
-
+  ```bash
   node express_server.js
 
-Open your browser and go to http://localhost:8080 to use the app.
+4. Open your browser and go to http://localhost:8080 to use the app.
